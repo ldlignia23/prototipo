@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototipo Módulo Gestión Infraestructura y Bienes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            color: #1a2c3e;
+        }
+
+        .top-bar {
+            background: #0a2b3e;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .role-selector {
+            background: #1e4d68;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-family: inherit;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .app-layout {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #ddd;
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.7rem 1.2rem;
+            margin: 0.2rem 0;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            font-size: 0.9rem;
+        }
+
+        .nav-item:hover {
+            background: #f0f7fa;
+            color: #1f6e93;
+        }
+
+        .nav-item.active {
+            background: #e3f2f5;
+            border-left-color: #1f6e93;
+            color: #1f6e93;
+            font-weight: 500;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .card-header {
+            padding: 1rem 1.5rem;
+            background: #fafafa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .card-header h3 {
+            font-size: 1rem;
+            color: #1f4e6e;
+        }
+
+        .card-body {
+            padding: 1rem 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 0.6rem 0.4rem;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 0.6rem 0.4rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-primary { background: #cce5ff; color: #004085; }
+        .badge-dark { background: #6c757d; color: white; }
+
+        .btn {
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            border: none;
+            font-family: inherit;
+            font-size: 0.7rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #1f6e93;
+            color: white;
+        }
+
+        .btn-primary:hover { background: #155a7a; }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #cbd5e0;
+        }
+        .btn-outline:hover { background: #f0f0f0; }
+        .btn-sm { padding: 0.2rem 0.5rem; font-size: 0.65rem; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 600px;
+            width: 90%;
+            border-radius: 12px;
+            padding: 1.5rem;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .close-modal {
+            cursor: pointer;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 0.8rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 0.2rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.4rem;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 0.8rem;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f6e93;
+        }
+
+        hr {
+            margin: 0.8rem 0;
+            border: none;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            font-size: 0.75rem;
+        }
+
+        .document-list {
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-top: 8px;
+            border-collapse: collapse;
+        }
+
+        .info-table th, .info-table td {
+            border: 1px solid #dee2e6;
+            padding: 6px 8px;
+            font-size: 0.75rem;
+        }
+
+        .info-table th {
+            background: #e9ecef;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+            }
+            .app-layout {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="logo">Prototipo - Módulo Gestión de Infraestructura y Bienes Institucionales</div>
+        <div>
+            👤 Demo &nbsp;|&nbsp;
+            <select id="roleSwitcher" class="role-selector">
+                <option value="rectorado">🎓 Rectorado/Directora/Ecónoma</option>
+                <option value="contadora">📊 Contadora/Auxiliar Contable / Colecturía</option>
+                <option value="admin">💻 Administrador Sistemas</option>
+                <option value="laboratorio">🔬 Asistente Laboratorio</option>
+                <option value="desarrollador">👨‍💻 Desarrollador</option>
+                <option value="sso">🛡️ SSO y Riesgos</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="app-layout">
+        <div class="sidebar">
+            <div class="nav-item" data-section="dashboard">📊 Dashboard</div>
+            <div class="nav-item" data-section="roles">👥 Matriz Roles</div>
+            <div class="nav-item" data-section="proveedores">🚛 Fase 1 - Proveedores</div>
+            <div class="nav-item" data-section="ordenes">📋 Fase 2 - Órdenes</div>
+            <div class="nav-item" data-section="aprobaciones">✅ Fase 3 - Flujo Aprobación GF10</div>
+            <div class="nav-item" data-section="ejecucion">🔧 Fase 4 - Ejecución y Cierre</div>
+            <div class="nav-item" data-section="liquidacion">💰 Fase 5 - Liquidación/Pagos</div>
+        </div>
+
+        <div class="main-content" id="mainContent"></div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Título</h3>
+                <span class="close-modal" onclick="cerrarModal()">&times;</span>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        const especialidadesCatalogo = [
+            'Plomería', 'Redes Eléctricas', 'Obra Civil', 'Tecnología/Redes', 
+            'Insumos Laboratorio', 'Aire Acondicionado', 'Carpintería', 
+            'Pintura', 'Jardinería', 'Seguridad', 'Bienes Tangibles', 'Bienes Intangibles'
+        ];
+
+        let proveedores = [
+            { id: 1, ruc: '1790012345001', razonSocial: 'Mantenimientos Integrales CA', especialidad: 'Plomería', calificacion: 'aprobado', activo: true },
+            { id: 2, ruc: '1791234567002', razonSocial: 'TecnoSoluciones S.A.', especialidad: 'Tecnología/Redes', calificacion: 'aprobado', activo: true },
+            { id: 3, ruc: '1798765432100', razonSocial: 'LabSupply Equipos', especialidad: 'Insumos Laboratorio', calificacion: 'aprobado', activo: true },
+            { id: 4, ruc: '1799988776655', razonSocial: 'Construcciones Andinas', especialidad: 'Obra Civil', calificacion: 'pendiente', activo: false }
+        ];
+
+        let bienes = [
+            { id: 1, nombre: 'Aire Acondicionado Aula 203', bloque: 'Bloque A', piso: 'Piso 2', ubicacion: 'Aula 203' },
+            { id: 2, nombre: 'Campana Extractora Laboratorio', bloque: 'Bloque C', piso: 'Piso 1', ubicacion: 'Lab Química' },
+            { id: 3, nombre: 'Switch de Red Principal', bloque: 'Bloque B', piso: 'Piso 3', ubicacion: 'Cuarto Servidores' },
+            { id: 4, nombre: 'Cabina Contraincendios', bloque: 'Bloque Norte', piso: 'PB', ubicacion: 'Pasillo Principal' }
+        ];
+
+        let ordenes = [
+            { id: 1, bienNombre: 'Aire Acondicionado Aula 203', bienUbicacion: 'Bloque A - Piso 2 - Aula 203', proveedorId: 1, tipoOrden: 'ordinario', tipoBien: 'tangible', monto: 95, estado: 'aprobado', fechaSolicitud: '2026-03-20', cotizaciones: [{nombre: 'cotizacion1.pdf', fecha: '2026-03-18'}], informeTecnico: null, actaEntrega: null, calificacion: null, fechaInicioReal: null, fechaFinReal: null, programacionProximoAnio: null, garantiaUrl: null, garantiaVencimiento: null },
+            { id: 2, bienNombre: 'Campana Extractora Laboratorio', bienUbicacion: 'Bloque C - Piso 1 - Lab Química', proveedorId: 2, tipoOrden: 'extraordinario', tipoBien: 'tangible', monto: 350, estado: 'pendiente', fechaSolicitud: '2026-03-21', cotizaciones: [{nombre: 'cotizacionA.pdf', fecha: '2026-03-19'},{nombre: 'cotizacionB.pdf', fecha: '2026-03-20'}], informeTecnico: null, actaEntrega: null, calificacion: null, fechaInicioReal: null, fechaFinReal: null, programacionProximoAnio: null, garantiaUrl: null, garantiaVencimiento: null },
+            { id: 3, bienNombre: 'Switch de Red Principal', bienUbicacion: 'Bloque B - Piso 3 - Cuarto Servidores', proveedorId: 2, tipoOrden: 'ordinario', tipoBien: 'tangible', monto: 210, estado: 'cierre_tecnico', fechaSolicitud: '2026-03-18', cotizaciones: [{nombre: 'cotizacionSW.pdf', fecha: '2026-03-17'}], informeTecnico: 'informe_switch.pdf', actaEntrega: 'acta_entrega.pdf', calificacion: 'excelente', fechaInicioReal: '2026-03-22', fechaFinReal: '2026-03-25', programacionProximoAnio: '2027-03-15', garantiaUrl: 'garantia_switch.pdf', garantiaVencimiento: '2027-03-25' }
+        ];
+
+        let seccionActual = 'dashboard';
+        let rolActual = 'rectorado';
+
+        function guardarDatos() {
+            localStorage.setItem('proveedores_test', JSON.stringify(proveedores));
+            localStorage.setItem('ordenes_test', JSON.stringify(ordenes));
+        }
+
+        function cargarDatos() {
+            let prov = localStorage.getItem('proveedores_test');
+            let ord = localStorage.getItem('ordenes_test');
+            if(prov) proveedores = JSON.parse(prov);
+            if(ord) ordenes = JSON.parse(ord);
+        }
+        cargarDatos();
+
+        function getProveedor(id) { return proveedores.find(p => p.id === id); }
+
+        function getNivelAutorizacionGF10(monto) {
+            if(monto > 50000) {
+                return { nivel: 'Consejo General (Italia)', descripcion: 'Aprobación por Consejo General' };
+            } else if(monto > 10000) {
+                return { nivel: 'Consejo Inspectorial', descripcion: 'Aprobación por Consejo Inspectorial' };
+            } else if(monto >= 5000 && monto <= 10000) {
+                return { nivel: 'Consejo Local + Inspectora + Economía Inspectorial', descripcion: 'Carta del Consejo Local con aprobación de Inspectora y Economía Inspectorial' };
+            } else {
+                return { nivel: 'Directora / Ecónoma', descripcion: 'Animadora y Economía en coordinación con el consejo local' };
+            }
+        }
+
+        function puedeGestionarProveedores() {
+            return rolActual === 'admin' || rolActual === 'sso' || rolActual === 'laboratorio';
+        }
+
+        function puedeCrearOrdenes() {
+            return rolActual === 'admin' || rolActual === 'laboratorio' || rolActual === 'sso' || rolActual === 'contadora';
+        }
+
+        function puedeAprobarOrdenes() {
+            return rolActual === 'rectorado' || rolActual === 'contadora';
+        }
+
+        function puedeGestionarCierre() {
+            return rolActual === 'admin' || rolActual === 'laboratorio' || rolActual === 'sso' || rolActual === 'contadora';
+        }
+
+        function puedePagar() {
+            return rolActual === 'contadora';
+        }
+
+        function renderizar() {
+            const container = document.getElementById('mainContent');
+            if(seccionActual === 'dashboard') renderDashboard(container);
+            else if(seccionActual === 'roles') renderRoles(container);
+            else if(seccionActual === 'proveedores') renderProveedores(container);
+            else if(seccionActual === 'ordenes') renderOrdenes(container);
+            else if(seccionActual === 'aprobaciones') renderAprobaciones(container);
+            else if(seccionActual === 'ejecucion') renderEjecucion(container);
+            else if(seccionActual === 'liquidacion') renderLiquidacion(container);
+        }
+
+        function renderDashboard(container) {
+            const pendientes = ordenes.filter(o => o.estado === 'pendiente').length;
+            const aprobados = ordenes.filter(o => o.estado === 'aprobado').length;
+            const cierre = ordenes.filter(o => o.estado === 'cierre_tecnico').length;
+            const liquidados = ordenes.filter(o => o.estado === 'liquidado').length;
+            const activos = proveedores.filter(p => p.activo && p.calificacion === 'aprobado').length;
+            
+            container.innerHTML = `
+                <h2>📊 Panel de Control</h2>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-number">${pendientes}</div><div>Pendientes Aprobación</div></div>
+                    <div class="stat-card"><div class="stat-number">${aprobados}</div><div>En Ejecución</div></div>
+                    <div class="stat-card"><div class="stat-number">${cierre}</div><div>Cierre Técnico</div></div>
+                    <div class="stat-card"><div class="stat-number">${liquidados}</div><div>Liquidados</div></div>
+                    <div class="stat-card"><div class="stat-number">${activos}</div><div>Proveedores Activos</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📋 Órdenes Recientes</h3>
+                        ${puedeCrearOrdenes() ? '<button class="btn btn-primary" onclick="abrirModalOrden()">+ Nueva Orden</button>' : ''}
+                    </div>
+                    <div class="card-body">
+                        ${renderTablaOrdenes()}
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>📍 Infraestructura por Bloques / Pisos / Aulas</h3></div>
+                    <div class="card-body">
+                        ${bienes.map(b => `<span class="badge badge-info">🏢 ${b.bloque} - Piso ${b.piso} - ${b.ubicacion}</span> `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTablaOrdenes() {
+            if(ordenes.length === 0) return '<p>No hay órdenes</p>';
+            let html = '<table class="data-table"><thead><tr><th>ID</th><th>Bien</th><th>Ubicación</th><th>Monto</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+            for(let i = 0; i < ordenes.length; i++) {
+                let o = ordenes[i];
+                let estadoClass = o.estado === 'pendiente' ? 'badge-warning' : (o.estado === 'aprobado' ? 'badge-success' : (o.estado === 'cierre_tecnico' ? 'badge-info' : 'badge-primary'));
+                html += '<tr>' +
+                    '<td>' + o.id + '</td>' +
+                    '<td>' + o.bienNombre + '</td>' +
+                    '<td><small>' + o.bienUbicacion + '</small></td>' +
+                    '<td>$' + o.monto + '</td>' +
+                    '<td><span class="badge ' + estadoClass + '">' + o.estado + '</span></td>' +
+                    '<td><button class="btn btn-outline btn-sm" onclick="verDetalle(' + o.id + ')">Ver Detalle</button></td>' +
+                '</tr>';
+            }
+            html += '</tbody></table>';
+            return html;
+        }
+
+        function renderRoles(container) {
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header"><h3>👥 Matriz de Roles y Permisos</h3></div>
+                    <div class="card-body">
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:0.8rem;">
+                            <div style="border:1px solid #ddd; border-radius:8px; padding:0.8rem;"><strong>🎓 Rectorado/Directora/Ecónoma</strong><br><span class="badge badge-primary">Lectura Global / Aprobaciones</span><p style="font-size:0.75rem;">Visualización total, reportes gerenciales, aprobación de órdenes según GF10</p></div>
+                            <div style="border:1px solid #ddd; border-radius:8px; padding:0.8rem;"><strong>📊 Contadora/Auxiliar Contable / Colecturía</strong><br><span class="badge badge-primary">Escritura / Operadores / Pagos</span><p style="font-size:0.75rem;">Creación de órdenes, carga de respaldos, conciliación, auditoría, gestión de proveedores, aprobación de órdenes, pagos y liquidación</p></div>
+                            <div style="border:1px solid #ddd; border-radius:8px; padding:0.8rem;"><strong>💻 Administrador Sistemas</strong><br><span class="badge badge-primary">Escritura / Operadores</span><p style="font-size:0.75rem;">Ingreso mantenimientos, carga respaldos, gestión de proveedores, actualización de estados, cierre técnico</p></div>
+                            <div style="border:1px solid #ddd; border-radius:8px; padding:0.8rem;"><strong>🔬 Asistente Laboratorio</strong><br><span class="badge badge-primary">Escritura / Operadores</span><p style="font-size:0.75rem;">Mantenimientos equipos laboratorio, carga respaldos, gestión de proveedores, cierre técnico</p></div>
+                            <div style="border:1px solid #ddd; border-radius:8px; padding:0.8rem;"><strong>👨‍💻 Desarrollador</strong><br><span class="badge badge-primary">Lectura / Configuración</span><p style="font-size:0.75rem;">Configuración catálogos (especialidades), gestión usuarios, auditoría. <strong>NO crea proveedores</strong></p></div>
+                            <div style="border:1px solid #ddd; border-radius:8px; padding:0.8rem;"><strong>🛡️ SSO y Riesgos</strong><br><span class="badge badge-primary">Escritura / Operadores</span><p style="font-size:0.75rem;">Mantenimientos preventivos, carga respaldos, gestión de proveedores, cierre técnico</p></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProveedores(container) {
+            let html = '<div class="card"><div class="card-header"><h3>🚛 Maestro de Proveedores Calificados (GF9-A)</h3>';
+            if(puedeGestionarProveedores()) {
+                html += '<button class="btn btn-primary" onclick="abrirModalProveedor()">+ Nuevo Proveedor</button>';
+            }
+            html += '</div><div class="card-body"><table class="data-table"><thead><tr><th>RUC</th><th>Razón Social</th><th>Especialidad</th><th>Calif.</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>';
+            for(let i = 0; i < proveedores.length; i++) {
+                let p = proveedores[i];
+                let califClass = p.calificacion === 'aprobado' ? 'badge-success' : 'badge-warning';
+                let estadoClass = p.activo ? 'badge-success' : 'badge-danger';
+                let estadoText = p.activo ? 'Activo' : 'Inactivo';
+                html += '<tr>' +
+                    '<td>' + p.ruc + '</td>' +
+                    '<td>' + p.razonSocial + '</td>' +
+                    '<td><span class="badge badge-info">' + p.especialidad + '</span></td>' +
+                    '<td><span class="badge ' + califClass + '">' + p.calificacion + '</span></td>' +
+                    '<td><span class="badge ' + estadoClass + '">' + estadoText + '</span></td>' +
+                    '<td>' + (puedeGestionarProveedores() ? '<button class="btn btn-outline btn-sm" onclick="editarProveedor(' + p.id + ')">Editar</button>' : 'Solo lectura') + '</td>' +
+                '</tr>';
+            }
+            html += '</tbody></table><div class="alert-warning">📌 Regla: Solo proveedores <strong>Activos + Aprobados</strong> pueden ser asignados a órdenes</div></div></div>';
+            container.innerHTML = html;
+        }
+
+        function renderOrdenes(container) {
+            let html = '<div class="card"><div class="card-header"><h3>📝 Requerimiento y Cotizaciones (Fase 2)</h3>';
+            if(puedeCrearOrdenes()) {
+                html += '<button class="btn btn-primary" onclick="abrirModalOrden()">+ Nueva Orden</button>';
+            }
+            html += '</div><div class="card-body"><table class="data-table"><thead><tr><th>ID</th><th>Bien</th><th>Proveedor</th><th>Tipo</th><th>Tipo Bien</th><th>Monto</th><th>Estado</th><th>Cotizaciones</th><th>Acciones</th></tr></thead><tbody>';
+            for(let i = 0; i < ordenes.length; i++) {
+                let o = ordenes[i];
+                let tipoClass = o.tipoOrden === 'extraordinario' ? 'badge-danger' : 'badge-info';
+                html += '<tr>' +
+                    '<td>' + o.id + '</td>' +
+                    '<td>' + o.bienNombre + '<br><small>' + o.bienUbicacion + '</small></td>' +
+                    '<td>' + (getProveedor(o.proveedorId)?.razonSocial || '-') + '</td>' +
+                    '<td><span class="badge ' + tipoClass + '">' + o.tipoOrden + '</span></td>' +
+                    '<td><span class="badge badge-primary">' + o.tipoBien + '</span></td>' +
+                    '<td>$' + o.monto + '</td>' +
+                    '<td><span class="badge badge-info">' + o.estado + '</span></td>' +
+                    '<td>' + o.cotizaciones.length + ' archivo(s)</td>' +
+                    '<td><button class="btn btn-outline btn-sm" onclick="verDetalle(' + o.id + ')">Ver/Gestionar</button></td>' +
+                '</tr>';
+            }
+            html += '</tbody></table><div class="alert-warning">📎 Regla: Mínimo 2 cotizaciones para montos > $100. Si es mantenimiento extraordinario, se bloquea hasta aprobación Fase 3.</div></div></div>';
+            container.innerHTML = html;
+        }
+
+        function renderAprobaciones(container) {
+            const pendientes = ordenes.filter(o => o.estado === 'pendiente');
+            let html = '<div class="card"><div class="card-header"><h3>⚙️ Flujo Aprobación GF10 - Niveles de Autorización</h3></div><div class="card-body">' +
+                '<div style="background:#e7f3ff; padding:12px; border-radius:8px; margin-bottom:15px;">' +
+                '<h4>📋 NIVELES DE AUTORIZACIÓN ESTABLECIDOS (GF10)</h4>' +
+                '<table class="info-table"><thead><tr><th>Monto de compra (bien y/o servicio)</th><th>Nivel de Autorización</th></tr></thead><tbody>' +
+                '<tr><td>Mayor a USD 50.000</td><td><strong>Consejo General (Italia)</strong></td></tr>' +
+                '<tr><td>Mayor a USD 10.000</td><td><strong>Consejo Inspectorial</strong></td></tr>' +
+                '<tr><td>Entre USD 5.000 y 10.000 USD</td><td><strong>Carta del Consejo Local con aprobación de Inspectora y Economía Inspectorial</strong></td></tr>' +
+                '<tr><td>Menor a USD 1.000</td><td><strong>Animadora y Economía en coordinación con el consejo local</strong></td></tr>' +
+                '</tbody></table></div><hr><h4>📌 Órdenes Pendientes de Aprobación</h4>' +
+                '<table class="data-table"><thead><tr><th>ID</th><th>Bien</th><th>Monto</th><th>Nivel de Autorización Requerido (GF10)</th><th>Acción</th></tr></thead><tbody>';
+            for(let i = 0; i < pendientes.length; i++) {
+                let o = pendientes[i];
+                const autorizacion = getNivelAutorizacionGF10(o.monto);
+                html += '<tr>' +
+                    '<td>' + o.id + '</td>' +
+                    '<td>' + o.bienNombre + '</td>' +
+                    '<td>$' + o.monto + '</td>' +
+                    '<td><span class="badge badge-warning">' + autorizacion.nivel + '</span><br><small>' + autorizacion.descripcion + '</small></td>' +
+                    '<td>' + (puedeAprobarOrdenes() ? '<button class="btn btn-primary btn-sm" onclick="aprobarOrden(' + o.id + ')">Aprobar</button>' : '<span class="badge badge-warning">Sin permisos</span>') + '</td>' +
+                '</tr>';
+            }
+            if(pendientes.length === 0) html += '<tr><td colspan="5">🎉 No hay órdenes pendientes de aprobación</td></tr>';
+            html += '</tbody></table><hr><p><span class="badge badge-info">💰 Anticipos:</span> Se permite solicitar anticipo previo a inicio de trabajos (detallar % en la solicitud)</p></div></div>';
+            container.innerHTML = html;
+        }
+
+        function renderEjecucion(container) {
+            const ejecucion = ordenes.filter(o => o.estado === 'aprobado' || o.estado === 'cierre_tecnico');
+            let html = '<div class="card"><div class="card-header"><h3>🔧 Ejecución y Cierre Técnico (Fase 4)</h3></div><div class="card-body">' +
+                '<table class="data-table"><thead><tr><th>ID</th><th>Bien</th><th>Estado</th><th>Fechas Real</th><th>Informe</th><th>Acta</th><th>Garantía</th><th>Prog. Próx. Año</th><th>Calif.</th><th>Acciones</th></tr></thead><tbody>';
+            for(let i = 0; i < ejecucion.length; i++) {
+                let o = ejecucion[i];
+                let fechas = o.fechaInicioReal ? o.fechaInicioReal + ' → ' + o.fechaFinReal : 'Pendiente';
+                let garantiaStatus = o.garantiaVencimiento ? '📄 Vence: ' + o.garantiaVencimiento : 'Sin garantía';
+                let alerta = o.garantiaVencimiento && new Date(o.garantiaVencimiento) < new Date(new Date().setMonth(new Date().getMonth() + 1)) ? '<span class="badge badge-danger">⚠️ Próximo a vencer</span>' : '';
+                let programacion = o.programacionProximoAnio ? o.programacionProximoAnio : 'Pendiente';
+                let calificacionIcon = o.calificacion === 'excelente' ? '🟢' : (o.calificacion === 'satisfactorio' ? '🟡' : (o.calificacion === 'no_satisfactorio' ? '🔴' : '-'));
+                html += '<tr>' +
+                    '<td>' + o.id + '</td>' +
+                    '<td>' + o.bienNombre + '</td>' +
+                    '<td><span class="badge badge-info">' + o.estado + '</span></td>' +
+                    '<td><small>' + fechas + '</small></td>' +
+                    '<td>' + (o.informeTecnico ? '✅' : '❌') + '</td>' +
+                    '<td>' + (o.actaEntrega ? '✅' : '❌') + '</td>' +
+                    '<td style="font-size:0.7rem;">' + garantiaStatus + ' ' + alerta + '</td>' +
+                    '<td style="font-size:0.7rem;">' + programacion + ' <button class="btn btn-outline btn-sm" onclick="abrirModalProgramacion(' + o.id + ')">📅</button></td>' +
+                    '<td style="text-align:center">' + calificacionIcon + '</td>' +
+                    '<td>' + (puedeGestionarCierre() ? '<button class="btn btn-outline btn-sm" onclick="abrirModalCierre(' + o.id + ')">Gestionar</button>' : 'Solo lectura') + '</td>' +
+                '</tr>';
+            }
+            html += '</tbody></table><div class="alert-warning">📎 Obligatorio: Informe técnico, acta entrega, garantía (con fecha vencimiento). Programación próximo año: fecha para el próximo mantenimiento (alimenta calendario preventivo).</div></div></div>';
+            container.innerHTML = html;
+        }
+
+        function renderLiquidacion(container) {
+            const listosPago = ordenes.filter(o => o.estado === 'cierre_tecnico' && o.informeTecnico && o.actaEntrega);
+            const pagados = ordenes.filter(o => o.estado === 'liquidado');
+            let html = '<div class="card"><div class="card-header"><h3>💰 Bandeja de Pagos - Colecturía (Fase 5)</h3></div><div class="card-body">' +
+                '<p><strong>✅ Condiciones de visibilidad:</strong> Proveedor validado + Aprobación jerárquica cumplida + Informe técnico + Acta de cierre</p>' +
+                '<h4>📋 Mantenimientos Listos para Pago</h4>' +
+                '<table class="data-table"><thead><tr><th>ID</th><th>Proveedor</th><th>Monto</th><th>Informe</th><th>Acta</th><th>Anticipo</th><th>Acción</th></tr></thead><tbody>';
+            for(let i = 0; i < listosPago.length; i++) {
+                let o = listosPago[i];
+                html += '<tr>' +
+                    '<td>' + o.id + '</td>' +
+                    '<td>' + (getProveedor(o.proveedorId)?.razonSocial || '-') + '</td>' +
+                    '<td>$' + o.monto + '</td>' +
+                    '<td>✅</td>' +
+                    '<td>✅</td>' +
+                    '<td><button class="btn btn-outline btn-sm" onclick="aprobarAnticipo(' + o.id + ')">Solicitar Anticipo</button> <span class="badge badge-info">% a definir</span></td>' +
+                    '<td>' + (puedePagar() ? '<button class="btn btn-primary btn-sm" onclick="abrirModalPago(' + o.id + ')">Registrar Pago</button>' : '<span class="badge badge-warning">Solo Contadora/Colecturía</span>') + '</td>' +
+                '</tr>';
+            }
+            if(listosPago.length === 0) html += '<tr><td colspan="7">📭 No hay órdenes listas para pago</td></tr>';
+            html += '</tbody></table><hr><h4>📜 Historial de Pagos Realizados</h4>' +
+                '<table class="data-table"><thead><tr><th>ID</th><th>Monto</th><th>Comprobante</th><th>Estado</th></tr></thead><tbody>';
+            for(let i = 0; i < pagados.length; i++) {
+                let o = pagados[i];
+                html += '<tr><td>' + o.id + '</td><td>$' + o.monto + '</td><td>' + (o.comprobantePago || 'PAG-'+o.id) + '</td><td><span class="badge badge-success">Pagado</span></td></tr>';
+            }
+            html += '</tbody></table></div></div>';
+            container.innerHTML = html;
+        }
+
+        window.verDetalle = function(id) {
+            const orden = ordenes.find(o => o.id === id);
+            document.getElementById('modalTitle').innerHTML = 'Orden #' + orden.id + ' - Gestión Completa';
+            let cotizacionesHtml = '';
+            for(let i = 0; i < orden.cotizaciones.length; i++) {
+                cotizacionesHtml += '<div>📄 ' + orden.cotizaciones[i].nombre + ' - ' + orden.cotizaciones[i].fecha + '</div>';
+            }
+            document.getElementById('modalBody').innerHTML = `
+                <p><strong>🏢 Bien:</strong> ${orden.bienNombre}</p>
+                <p><strong>📍 Ubicación:</strong> ${orden.bienUbicacion}</p>
+                <p><strong>🚛 Proveedor:</strong> ${getProveedor(orden.proveedorId)?.razonSocial}</p>
+                <p><strong>💰 Monto:</strong> $${orden.monto} | <strong>Tipo:</strong> ${orden.tipoOrden} | <strong>Tipo Bien:</strong> ${orden.tipoBien}</p>
+                <p><strong>📅 Fecha Solicitud:</strong> ${orden.fechaSolicitud}</p>
+                <p><strong>📌 Estado:</strong> <span class="badge badge-info">${orden.estado}</span></p>
+                <hr>
+                <h4>📎 Documentos Adjuntos (Cotizaciones)</h4>
+                <div class="document-list">
+                    ${cotizacionesHtml}
+                    ${puedeCrearOrdenes() ? '<button class="btn btn-outline btn-sm" onclick="cargarCotizacion(' + orden.id + ')">+ Cargar Cotización</button>' : ''}
+                </div>
+                ${orden.informeTecnico ? '<p><strong>📄 Informe Técnico:</strong> ' + orden.informeTecnico + '</p>' : ''}
+                ${orden.actaEntrega ? '<p><strong>📋 Acta Entrega:</strong> ' + orden.actaEntrega + '</p>' : ''}
+                ${orden.garantiaUrl ? '<p><strong>🔒 Garantía:</strong> ' + orden.garantiaUrl + ' (Vence: ' + orden.garantiaVencimiento + ')</p>' : ''}
+                <button class="btn btn-primary" onclick="cerrarModal()">Cerrar</button>
+            `;
+            document.getElementById('modal').style.display = 'flex';
+        };
+
+        window.cargarCotizacion = function(id) {
+            const orden = ordenes.find(o => o.id === id);
+            const nombre = prompt('Nombre del archivo de cotización:');
+            if(nombre) {
+                orden.cotizaciones.push({nombre: nombre, fecha: new Date().toISOString().slice(0,10)});
+                guardarDatos();
+                alert('Cotización cargada exitosamente');
+                verDetalle(id);
+            }
+        };
+
+        window.abrirModalOrden = function() {
+            document.getElementById('modalTitle').innerHTML = 'Nueva Orden de Mantenimiento/Adquisición';
+            const proveedoresActivos = proveedores.filter(p => p.activo && p.calificacion === 'aprobado');
+            let provOptions = '';
+            for(let i = 0; i < proveedoresActivos.length; i++) {
+                provOptions += '<option value="' + proveedoresActivos[i].id + '">' + proveedoresActivos[i].razonSocial + '</option>';
+            }
+            if(proveedoresActivos.length === 0) {
+                alert('No hay proveedores activos y aprobados');
+                return;
+            }
+            document.getElementById('modalBody').innerHTML = `
+                <form id="formOrden">
+                    <div class="form-group"><label>Bien / Infraestructura *</label><input type="text" class="form-control" id="bienNombre" required placeholder="Ej: Aire acondicionado, Switch, etc."></div>
+                    <div class="form-group"><label>Ubicación (Bloque / Piso / Aula) *</label><input type="text" class="form-control" id="bienUbicacion" required placeholder="Ej: Bloque A - Piso 2 - Aula 203"></div>
+                    <div class="form-group"><label>Proveedor *</label><select class="form-control" id="proveedorId">${provOptions}</select></div>
+                    <div class="form-group"><label>Tipo de Orden *</label><select class="form-control" id="tipoOrden"><option value="ordinario">Ordinario (Preventivo)</option><option value="extraordinario">Extraordinario (Correctivo/Emergencia)</option></select></div>
+                    <div class="form-group"><label>Tipo de Bien *</label><select class="form-control" id="tipoBien"><option value="tangible">Tangible (Equipo, Infraestructura)</option><option value="intangible">Intangible (Software, Licencias)</option></select></div>
+                    <div class="form-group"><label>Monto ($) *</label><input type="number" class="form-control" id="monto" required></div>
+                    <div class="form-group"><label>Fecha de Solicitud *</label><input type="date" class="form-control" id="fechaSolicitud" value="${new Date().toISOString().slice(0,10)}" required></div>
+                    <button type="submit" class="btn btn-primary">Guardar Orden</button>
+                </form>
+            `;
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('formOrden').onsubmit = function(e) {
+                e.preventDefault();
+                const nuevaOrden = {
+                    id: ordenes.length + 1,
+                    bienNombre: document.getElementById('bienNombre').value,
+                    bienUbicacion: document.getElementById('bienUbicacion').value,
+                    proveedorId: parseInt(document.getElementById('proveedorId').value),
+                    tipoOrden: document.getElementById('tipoOrden').value,
+                    tipoBien: document.getElementById('tipoBien').value,
+                    monto: parseFloat(document.getElementById('monto').value),
+                    estado: 'pendiente',
+                    fechaSolicitud: document.getElementById('fechaSolicitud').value,
+                    cotizaciones: [],
+                    informeTecnico: null,
+                    actaEntrega: null,
+                    calificacion: null,
+                    fechaInicioReal: null,
+                    fechaFinReal: null,
+                    programacionProximoAnio: null,
+                    garantiaUrl: null,
+                    garantiaVencimiento: null
+                };
+                ordenes.push(nuevaOrden);
+                guardarDatos();
+                cerrarModal();
+                renderizar();
+                alert('✅ Orden creada. Pasa a fase de aprobación (GF10).');
+            };
+        };
+
+        window.aprobarOrden = function(id) {
+            const orden = ordenes.find(o => o.id === id);
+            const autorizacion = getNivelAutorizacionGF10(orden.monto);
+            if(confirm('¿Aprobar orden #' + id + ' por $' + orden.monto + '?\n\nNivel: ' + autorizacion.nivel + '\n' + autorizacion.descripcion)) {
+                orden.estado = 'aprobado';
+                guardarDatos();
+                renderizar();
+                alert('✅ Orden aprobada financieramente. Pasa a fase de ejecución.');
+            }
+        };
+
+        window.abrirModalCierre = function(id) {
+            const orden = ordenes.find(o => o.id === id);
+            document.getElementById('modalTitle').innerHTML = 'Cierre Técnico - Orden #' + id;
+            document.getElementById('modalBody').innerHTML = `
+                <form id="formCierre">
+                    <div class="form-group"><label>Fecha Inicio Real</label><input type="date" class="form-control" id="fechaInicio" value="${orden.fechaInicioReal || ''}"></div>
+                    <div class="form-group"><label>Fecha Fin Real</label><input type="date" class="form-control" id="fechaFin" value="${orden.fechaFinReal || ''}"></div>
+                    <div class="form-group"><label>Programación Próximo Año (Fecha)</label><input type="date" class="form-control" id="programacion" placeholder="Fecha próximo mantenimiento" value="${orden.programacionProximoAnio || ''}"></div>
+                    <div class="form-group"><label>Informe Técnico (URL)</label><input class="form-control" id="informe" placeholder="drive/informe.pdf" value="${orden.informeTecnico || ''}"></div>
+                    <div class="form-group"><label>Acta Entrega-Recepción (URL)</label><input class="form-control" id="acta" placeholder="drive/acta.pdf" value="${orden.actaEntrega || ''}"></div>
+                    <div class="form-group"><label>Certificado de Garantía (URL)</label><input class="form-control" id="garantiaUrl" placeholder="drive/garantia.pdf" value="${orden.garantiaUrl || ''}"></div>
+                    <div class="form-group"><label>Fecha Vencimiento Garantía</label><input type="date" class="form-control" id="garantiaVenc" value="${orden.garantiaVencimiento || ''}"></div>
+                    <div class="form-group"><label>Calificación Servicio</label><select class="form-control" id="calif"><option value="excelente">🟢 Excelente</option><option value="satisfactorio">🟡 Satisfactorio</option><option value="no_satisfactorio">🔴 No satisfactorio</option></select></div>
+                    <button type="submit" class="btn btn-primary">Guardar Cierre Técnico</button>
+                </form>
+            `;
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('formCierre').onsubmit = function(e) {
+                e.preventDefault();
+                orden.fechaInicioReal = document.getElementById('fechaInicio').value;
+                orden.fechaFinReal = document.getElementById('fechaFin').value;
+                orden.programacionProximoAnio = document.getElementById('programacion').value;
+                orden.informeTecnico = document.getElementById('informe').value || 'informe_cargado.pdf';
+                orden.actaEntrega = document.getElementById('acta').value || 'acta_cargada.pdf';
+                orden.garantiaUrl = document.getElementById('garantiaUrl').value;
+                orden.garantiaVencimiento = document.getElementById('garantiaVenc').value;
+                orden.calificacion = document.getElementById('calif').value;
+                orden.estado = 'cierre_tecnico';
+                guardarDatos();
+                cerrarModal();
+                renderizar();
+                alert('✅ Cierre técnico registrado. Orden lista para liquidación.');
+            };
+        };
+
+        window.abrirModalProgramacion = function(id) {
+            const orden = ordenes.find(o => o.id === id);
+            let nuevaFecha = prompt('Ingrese la fecha para el próximo mantenimiento (formato YYYY-MM-DD):', orden.programacionProximoAnio || '');
+            if(nuevaFecha && nuevaFecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                orden.programacionProximoAnio = nuevaFecha;
+                guardarDatos();
+                renderizar();
+                alert('✅ Programación actualizada. Alimenta calendario preventivo.');
+            } else if(nuevaFecha) {
+                alert('❌ Formato de fecha inválido. Use YYYY-MM-DD');
+            }
+        };
+
+        window.aprobarAnticipo = function(id) {
+            const orden = ordenes.find(o => o.id === id);
+            let porcentaje = prompt('Solicitar anticipo para orden #' + id + ' (Monto: $' + orden.monto + ')\nIngrese el porcentaje de anticipo solicitado:', '30');
+            if(porcentaje && !isNaN(parseFloat(porcentaje))) {
+                alert('✅ Anticipo del ' + porcentaje + '% ($' + (orden.monto * parseFloat(porcentaje)/100).toFixed(2) + ') solicitado. Pendiente de aprobación de pago.');
+            } else if(porcentaje) {
+                alert('❌ Ingrese un porcentaje válido');
+            }
+        };
+
+        window.abrirModalPago = function(id) {
+            const orden = ordenes.find(o => o.id === id);
+            document.getElementById('modalTitle').innerHTML = 'Registrar Pago - Orden #' + id;
+            document.getElementById('modalBody').innerHTML = `
+                <form id="formPago">
+                    <div class="form-group"><label>Monto Aprobado</label><input type="text" class="form-control" value="$${orden.monto}" readonly></div>
+                    <div class="form-group"><label>Número de Comprobante de Pago *</label><input type="text" class="form-control" id="comprobante" required placeholder="Ej: FACT-001-2026"></div>
+                    <div class="form-group"><label>Factura (física/electrónica)</label><input type="text" class="form-control" id="factura" placeholder="Número de factura"></div>
+                    <button type="submit" class="btn btn-primary">Registrar Pago y Cerrar Ciclo</button>
+                </form>
+            `;
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('formPago').onsubmit = function(e) {
+                e.preventDefault();
+                orden.comprobantePago = document.getElementById('comprobante').value;
+                orden.factura = document.getElementById('factura').value;
+                orden.estado = 'liquidado';
+                guardarDatos();
+                cerrarModal();
+                renderizar();
+                alert('✅ Pago registrado. Comprobante: ' + orden.comprobantePago + '\nCiclo cerrado exitosamente.');
+            };
+        };
+
+        window.editarProveedor = function(id) {
+            const p = proveedores.find(p => p.id === id);
+            let especialidadesOptions = '';
+            for(let i = 0; i < especialidadesCatalogo.length; i++) {
+                let esp = especialidadesCatalogo[i];
+                especialidadesOptions += '<option ' + (p.especialidad === esp ? 'selected' : '') + '>' + esp + '</option>';
+            }
+            document.getElementById('modalTitle').innerHTML = 'Editar Proveedor';
+            document.getElementById('modalBody').innerHTML = `
+                <form id="formProv">
+                    <div class="form-group"><label>RUC</label><input class="form-control" id="ruc" value="${p.ruc}"></div>
+                    <div class="form-group"><label>Razón Social</label><input class="form-control" id="razon" value="${p.razonSocial}"></div>
+                    <div class="form-group"><label>Especialidad</label><select class="form-control" id="esp">${especialidadesOptions}</select></div>
+                    <div class="form-group"><label>Calificación</label><select class="form-control" id="calif"><option ${p.calificacion === 'aprobado' ? 'selected' : ''}>aprobado</option><option ${p.calificacion === 'pendiente' ? 'selected' : ''}>pendiente</option><option ${p.calificacion === 'rechazado' ? 'selected' : ''}>rechazado</option></select></div>
+                    <div class="form-group"><label>Estado</label><select class="form-control" id="activo"><option value="true" ${p.activo ? 'selected' : ''}>Activo</option><option value="false" ${!p.activo ? 'selected' : ''}>Inactivo</option></select></div>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            `;
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('formProv').onsubmit = function(e) {
+                e.preventDefault();
+                p.ruc = document.getElementById('ruc').value;
+                p.razonSocial = document.getElementById('razon').value;
+                p.especialidad = document.getElementById('esp').value;
+                p.calificacion = document.getElementById('calif').value;
+                p.activo = document.getElementById('activo').value === 'true';
+                guardarDatos();
+                cerrarModal();
+                renderizar();
+                alert('Proveedor actualizado');
+            };
+        };
+
+        window.abrirModalProveedor = function() {
+            let especialidadesOptions = '';
+            for(let i = 0; i < especialidadesCatalogo.length; i++) {
+                especialidadesOptions += '<option>' + especialidadesCatalogo[i] + '</option>';
+            }
+            document.getElementById('modalTitle').innerHTML = 'Nuevo Proveedor';
+            document.getElementById('modalBody').innerHTML = `
+                <form id="formProv">
+                    <div class="form-group"><label>RUC</label><input class="form-control" id="ruc" required></div>
+                    <div class="form-group"><label>Razón Social</label><input class="form-control" id="razon" required></div>
+                    <div class="form-group"><label>Especialidad</label><select class="form-control" id="esp">${especialidadesOptions}</select></div>
+                    <div class="form-group"><label>Calificación</label><select class="form-control" id="calif"><option>pendiente</option><option>aprobado</option><option>rechazado</option></select></div>
+                    <div class="form-group"><label>Estado</label><select class="form-control" id="activo"><option value="true">Activo</option><option value="false">Inactivo</option></select></div>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            `;
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('formProv').onsubmit = function(e) {
+                e.preventDefault();
+                const nuevo = {
+                    id: proveedores.length + 1,
+                    ruc: document.getElementById('ruc').value,
+                    razonSocial: document.getElementById('razon').value,
+                    especialidad: document.getElementById('esp').value,
+                    calificacion: document.getElementById('calif').value,
+                    activo: document.getElementById('activo').value === 'true'
+                };
+                proveedores.push(nuevo);
+                guardarDatos();
+                cerrarModal();
+                renderizar();
+                alert('Proveedor creado');
+            };
+        };
+
+        window.cerrarModal = function() {
+            document.getElementById('modal').style.display = 'none';
+        };
+
+        document.getElementById('roleSwitcher').addEventListener('change', function(e) {
+            rolActual = e.target.value;
+            renderizar();
+        });
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+                seccionActual = this.getAttribute('data-section');
+                renderizar();
+            });
+        });
+
+        renderizar();
+    </script>
+</body>
+</html>
